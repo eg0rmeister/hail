@@ -3,65 +3,9 @@ import math
 import time
 import random
 import neuro
+import pickle
+import classes
 
-
-class thing():
-
-    def __init__(self, x = 0, y = 0, radius = 10, speed = 2, speed_x = 0, speed_y = 0, size = 800):
-        self.x = x
-        self.y = y
-        self.radius = radius
-        self.speed_x = speed_x
-        self.speed_y = speed_y
-        self.size = size
-
-
-
-
-class player(thing):
-    
-    def move(self):
-        self.y += self.speed_y
-        self.x += self.speed_x
-        if self.x > self.size:
-            self.x = self.size
-        if self.x < 0:
-            self.x = 0
-        if self.y > self.size:
-            self.y = self.size
-        if self.y < 0:
-            self.y = 0
-    
-    def check_collision(self, obj:thing):
-        if math.sqrt((obj.x - self.x)**2 + (obj.y - self.y)**2) <= self.radius + obj.radius:
-            return True
-        return False
-    
-    def look(self, obj:thing):
-        if math.abs(obj.x - self.x) < self.radius + obj.radius:
-            if obj.y > self.y:
-                return ("N", obj.y - self.y)
-            else:
-                return ("S", self.y - obj.y)
-        if math.abs(obj.y - self.y) < self.radius + obj.radius:
-            if obj.x > self.x:
-                return("E", obj.x - self.x)
-            else:
-                return("W", self.x - obj.x)]
-        if obj.y < self.y + obj.x + math.sqrt(2)*self.radius and obj.y > self.y + obj.x - math.sqrt(2)*self.radius:
-            return("diag_right", math.sqrt((self.x - obj.x)**2 + (self.y - obj.y)**2))
-        if obj.y < self.y - obj.x + math.sqrt(2)*self.radius and obj.y > self.y - obj.x - math.sqrt(2)*self.radius:
-            return("diag_right", math.sqrt((self.x - obj.x)**2 + (self.y - obj.y)**2))
-            
-
-class obstacle(thing):
-
-    def move(self):
-        self.y += self.speed_y
-        self.x += self.speed_x  
-        if self.y >= self.size or self.x >= self.size or self.x <= 0:
-            return True
-        return False
 
 
 pygame.font.init()
@@ -73,8 +17,6 @@ speed = 2
 speed_obstacle = 1
 size = 800
 
-pl = player(size//2, size*3//4)
-
 screen = pygame.display.set_mode((size, size))
 
 
@@ -82,85 +24,190 @@ screen = pygame.display.set_mode((size, size))
 running = True
 key = None
 obs = []
-
+gen_am = 100
 pygame.display.flip()
+with open("memory.txt", "rb") as f:
+    mx = pickle.load(f)
 
-for i in 
+generation_number = 0
+number_of_living = 5
+with open("settings", "rb") as f:
+    delay_time, difficulty, draw_everyone, generation_number, gen_am = pickle.load(f)
 
-
-neu = neuro.Neuro()
-
-
-while running:
-    if random.randint(0, 50) == 0:
+rnu = True
+try:
+    while rnu:
+        generation_number += 1
+        players = []
+        for i in range(number_of_living):
+            players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi= mx[i]))
+        running = True
+        scoreboard = {}
+        obs = []
+        for i in range(number_of_living, gen_am):
+            rannum = random.randint(0, number_of_living-1)
+            mx1 = []
+            for i1 in range(len(mx[0])):
+                mx1.append([])
+                for i2 in range(len(mx[0][i1])):
+                    mx1[i1].append([])
+                    for i3 in range(len(mx[0][i1][i2])):
+                        mx1[i1]
+                        mx1[i1][i2]
+                        mx[rannum]
+                        mx[rannum][i1]
+                        mx[rannum][i1][i2]
+                        mx[rannum][i1][i2][i3]
+                        mx1[i1][i2].append(mx[rannum][i1][i2][i3])
+    #        temp1 = players[i].nn.mx[0][0][0]
+    #        temp2 = mx[0][0][0]
+            players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi=mx1))
+            players[-1].nn.mutate(1, chance=100)
+    #        print(len(players[-1].nn.mx))
+            print(players[i].nn.mx == players[i-1].nn.mx)
+        print("generation_nummer", generation_number)
+        framecount = 0
+        alive = True
         obs.append  (
-                        obstacle(
+                        classes.obstacle(
                                 speed_y= 1,
-                                x= random.randint(1, size-1),
+                                x= size/2,
                                 y= 1
                                 )
                     )
+        while running:
+            framecount += 2
+            if random.randint(0, difficulty) == 0:
+                obs.append  (
+                                classes.obstacle(
+                                        speed_y= 1,
+                                        x= random.randint(1, size-1),
+                                        y= 1
+                                        )
+                            )
 
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    
-    
-
-    screen.fill((255, 255, 255))
-    pl.move()
-    color_r = (255, 0, 0)
-    color_l = (255, 0, 0)
-    color_u = (255, 0, 0)
-    color_d = (255, 0, 0)
-    if pl.speed_x > 0:
-        color_r = (0, 255, 0)
-    elif pl.speed_x < 0:
-        color_l = (0, 255, 0)
-    if pl.speed_y > 0:
-        color_d = (0, 255, 0)
-    elif pl.speed_y < 0:
-        color_u = (0, 255, 0)
-
-
-    pygame.draw.line(screen, color_r, (pl.x + pl.radius, pl.y), (size, pl.y))
-    pygame.draw.line(screen, color_l, (pl.x - pl.radius, pl.y), (0, pl.y))
-    pygame.draw.line(screen, color_u, (pl.x, pl.y + pl.radius), (pl.x, 0))
-    pygame.draw.line(screen, color_d, (pl.x, pl.y - pl.radius), (pl.x, size))
-
-    pygame.draw.circle(
-                    screen,
-                    (0, 0, 0),
-                    (pl.x, pl.y),
-                    pl.radius
-                    )
-
-    pygame.draw.circle(
-                    screen,
-                    (255, 255, 255),
-                    (pl.x, pl.y),
-                    pl.radius-3
-                    )
-    
-    for i in obs:
-        i.speed_y = 1
-        if i.move():
-            obs.remove(i)
-        
-        pygame.draw.circle(
-                    screen,
-                    (0, 0, 0),
-                    (i.x, i.y),
-                    i.radius
-                    )
-        if pl.check_collision(i):
-            print("end")
-            b = True
-            while b:
-                for _ in pygame.event.get():
-                    if _.type == pygame.KEYDOWN or _.type == pygame.MOUSEBUTTONDOWN or _.type == pygame.QUIT:
-                        b = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    rnu = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        b = True
+                        while b:
+                            for event in pygame.event.get():
+                                if event.type == pygame.KEYDOWN:
+                                    if event.key == pygame.K_SPACE:
+                                        b = False
+                                if event.type == pygame.MOUSEBUTTONDOWN:
+                                    for pl in players:
+                                        if (event.pos[0] - pl.x)**2 + (event.pos[1] - pl.y)**2 <= pl.radius**2:
+                                            pl.score += max(scoreboard.keys())
+                                            print("gotcha")
+                    elif event.key == pygame.K_ESCAPE:
                         running = False
-    pygame.display.flip()
-    time.sleep(0.01)
+                    elif event.key == pygame.K_d:
+                        draw_everyone = not draw_everyone
+                    elif event.key == pygame.K_t:
+                        delay_time = float(input("enter delay time"))
+                    elif event.key == pygame.K_s:
+                        difficulty = int(input("enter difficulty(0 = hard, 10 = easy)"))
+                    elif event.key == pygame.K_n:
+                        gen_am = int(input("number of surviving"))
+
+
+            screen.fill((255, 255, 255))
+            for pl in players:
+                if draw_everyone:
+                    pygame.draw.circle(
+                                    screen,
+                                    (0, 0, 0),
+                                    (pl.x, pl.y),
+                                    pl.radius
+                                    )
+                    pygame.draw.circle(
+                                    screen,
+                                    (255, 255, 255),
+                                    (pl.x, pl.y),
+                                    pl.radius-3
+                                    )
+                pl.move()
+
+            
+
+
+            if alive:
+                pygame.draw.circle(
+                                    screen,
+                                    (0, 0, 0),
+                                    (players[0].x, players[0].y),
+                                    players[0].radius
+                )
+
+                pygame.draw.circle(
+                                    screen,
+                                    (0, 255, 0),
+                                    (players[0].x, players[0].y),
+                                    players[0].radius-3
+                )
+
+            for i in obs:
+                i.speed_y = 1
+                pygame.draw.circle(
+                            screen,
+                            (0, 0, 0),
+                            (i.x, i.y),
+                            i.radius
+                            )
+                if i.move():
+                    obs.remove(i)
+                
+                for pl in players:
+                    pl.score += size*2 - abs(pl.x-size/2)*2 - abs(pl.y-size/2)
+                    if pl.check_collision(i) or pl.y >= size or pl.x >= size or pl.x <= 0 or pl.y <= 0:
+                        scoreboard[pl.score] = pl.nn.mx.copy()
+                        if pl is players[0]:
+                            alive = False
+                        players.remove(pl)
+                        if len(players) == 0:
+                            mx = []
+                            for i in range(1, number_of_living + 1):
+                                try:
+                                    print(sorted(scoreboard.keys()))
+                                    mx.append(scoreboard[sorted(scoreboard.keys())[-i]])
+                                except IndexError:
+                                    print(i, "horrible")
+                                    rnu = False
+                            print(len(scoreboard.keys()))
+                            running = False
+
+            for pl in players:
+                outs = [0 for _ in range(8)]
+                
+                '''
+                outs[1] = size - pl.x
+                outs[0] = pl.x
+                outs[3] = size - pl.y
+                outs[2] = pl.y
+                outs[4] = min(size - pl.x, size - pl.y) * math.sqrt(2)
+                outs[5] = min(pl.x, pl.y) * math.sqrt(2)
+                outs[6] = min(pl.x, pl.y) * math.sqrt(2)
+                outs[7] = min(size - pl.x, pl.y) * math.sqrt(2)
+                outs[7] = min(size - pl.y, pl.x) * math.sqrt(2)
+                '''
+                
+                for i in obs:
+                    temp = pl.look(i)
+                    if temp:
+                        if temp[0] not in outs or temp[1] < outs[temp[0]] or outs[temp[0]] == 0:
+                            outs[temp[0]] = int(temp[1])
+                pl.decide(*outs, pl.x - size/2, pl.y - size/2)
+            pygame.display.flip()
+            pygame.time.wait(delay_time)
+except Exception as e:
+    print(e, e.args)
+    for i in e.args:
+        print(i)
+with open("settings", "wb+") as f:
+    pickle.dump((delay_time, difficulty, draw_everyone, generation_number, gen_am), f)
+with open("memory.txt", "wb+") as f:
+    pickle.dump(mx, f)

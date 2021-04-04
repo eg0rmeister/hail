@@ -2,7 +2,6 @@ import pygame
 import math
 import time
 import random
-import neuro
 
 import classes
 
@@ -12,6 +11,7 @@ pygame.font.init()
 pygame.init()
 
 
+difficulty = 5
 speed = 2
 speed_obstacle = 1
 size = 800
@@ -31,9 +31,11 @@ key = None
 obs = []
 
 pygame.display.flip()
+score = 0
 while running:
+    score += 1
     outs = {}
-    if random.randint(0, 3) == 0:
+    if random.randint(0, difficulty) == 0:
         obs.append  (
                         classes.obstacle(
                                 speed_y= 1,
@@ -118,6 +120,10 @@ while running:
         cnt += 1
         txt = fnt.render(str(i) + ": " + str(outs[i]), True, (0, 0, 0))
         screen.blit(txt, (0, cnt*30))
+    
+        
+    txt = fnt.render("score: " + str(score), True, (0, 0, 0))
+    screen.blit(txt, (0, size - 30))
         
     pygame.draw.line(screen, color_e, (pl.x + pl.radius, pl.y), (size, pl.y))
     pygame.draw.line(screen, color_w, (pl.x - pl.radius, pl.y), (0, pl.y))
@@ -147,13 +153,14 @@ while running:
         i.speed_y = 1
         if i.move():
             obs.remove(i)
-        
         pygame.draw.circle(
                     screen,
                     (0, 0, 0),
                     (i.x, i.y),
                     i.radius
                     )
+    pygame.display.flip()
+    for i in obs:
         if pl.check_collision(i):
             print("end")
             b = True
@@ -162,5 +169,5 @@ while running:
                     if _.type == pygame.KEYDOWN or _.type == pygame.MOUSEBUTTONDOWN or _.type == pygame.QUIT:
                         b = False
                         running = False
-    pygame.display.flip()
+        
     time.sleep(0.01)
