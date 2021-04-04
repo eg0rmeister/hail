@@ -64,7 +64,7 @@ try:
             players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi=mx1))
             players[-1].nn.mutate(1, chance=100)
     #        print(len(players[-1].nn.mx))
-            print(players[i].nn.mx == players[i-1].nn.mx)
+    #        print(players[i].nn.mx == players[i-1].nn.mx)
         print("generation_nummer", generation_number)
         framecount = 0
         alive = True
@@ -172,7 +172,6 @@ try:
                             mx = []
                             for i in range(1, number_of_living + 1):
                                 try:
-                                    print(sorted(scoreboard.keys()))
                                     mx.append(scoreboard[sorted(scoreboard.keys())[-i]])
                                 except IndexError:
                                     print(i, "horrible")
@@ -203,10 +202,18 @@ try:
                 pl.decide(*outs, pl.x - size/2, pl.y - size/2)
             pygame.display.flip()
             pygame.time.wait(delay_time)
+        if generation_number%10 == 0:
+            print("remembering")
+            with open("settings", "wb+") as f:
+                pickle.dump((delay_time, difficulty, draw_everyone, generation_number, gen_am), f)
+            with open("memory.txt", "wb+") as f:
+                pickle.dump(mx, f)
 except Exception as e:
     print(e, e.args)
     for i in e.args:
         print(i)
+except KeyboardInterrupt:
+    print("interrupted")
 with open("settings", "wb+") as f:
     pickle.dump((delay_time, difficulty, draw_everyone, generation_number, gen_am), f)
 with open("memory.txt", "wb+") as f:
