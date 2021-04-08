@@ -5,7 +5,8 @@ import random
 import neuro
 import pickle
 import classes
-
+import traceback
+import nullify_memory
 
 
 pygame.font.init()
@@ -39,8 +40,16 @@ try:
     while rnu:
         generation_number += 1
         players = []
-        for i in range(number_of_living):
-            players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi= mx[i]))
+        try:
+            for i in range(number_of_living):
+                players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi= mx[i]))
+                players[i].apple.spawn(100)
+                print(i)
+        except IndexError:
+            nullify_memory.fun(10, number_of_living)
+            with open("memory.txt", "rb") as f:
+                mx = pickle.load(f)
+            continue
         running = True
         scoreboard = {}
         obs = []
@@ -63,11 +72,13 @@ try:
     #        temp2 = mx[0][0][0]
             players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi=mx1))
             players[-1].nn.mutate(1, chance=100)
+            players[-1].apple.spawn(100)
     #        print(len(players[-1].nn.mx))
     #        print(players[i].nn.mx == players[i-1].nn.mx)
         print("generation_nummer", generation_number)
         framecount = 0
         alive = True
+        main_player_num = 0
         obs.append  (
                         classes.obstacle(
                                 speed_y= 1,
@@ -99,10 +110,21 @@ try:
                                     if event.key == pygame.K_SPACE:
                                         b = False
                                 if event.type == pygame.MOUSEBUTTONDOWN:
-                                    for pl in players:
-                                        if (event.pos[0] - pl.x)**2 + (event.pos[1] - pl.y)**2 <= pl.radius**2:
-                                            pl.score += max(scoreboard.keys())
-                                            print("gotcha")
+                                    for i in range(len(players)):
+                                        if (event.pos[0] - players[i].x)**2 + (event.pos[1] - players[i].y)**2 <= players[i].radius**2:
+                                            if event.button == pygame.BUTTON_LEFT:
+                                                players[i].score += players[i].apple.price*20
+                                                print("gotcha")
+                                            elif event.button == pygame.BUTTON_RIGHT:
+                                                print("new favourite")
+                                                main_player_num = i
+                                                alive = True
+                                            elif event.button == pygame.BUTTON_MIDDLE:
+                                                print("die")
+                                                players[i].score = -players[i].apple.price*20
+                                                
+                                                
+
                     elif event.key == pygame.K_ESCAPE:
                         running = False
                     elif event.key == pygame.K_d:
@@ -112,7 +134,7 @@ try:
                     elif event.key == pygame.K_s:
                         difficulty = int(input("enter difficulty(0 = hard, 10 = easy)"))
                     elif event.key == pygame.K_n:
-                        gen_am = int(input("number of surviving"))
+                        gen_am = int(input("amount in generation"))
 
 
             screen.fill((255, 255, 255))
@@ -139,16 +161,31 @@ try:
                 pygame.draw.circle(
                                     screen,
                                     (0, 0, 0),
-                                    (players[0].x, players[0].y),
-                                    players[0].radius
+                                    (players[main_player_num].x, players[main_player_num].y),
+                                    players[main_player_num].radius
                 )
 
                 pygame.draw.circle(
                                     screen,
-                                    (0, 255, 0),
-                                    (players[0].x, players[0].y),
-                                    players[0].radius-3
+                                    (0, 100, 255),
+                                    (players[main_player_num].x, players[main_player_num].y),
+                                    players[main_player_num].radius-3
                 )
+
+                pygame.draw.circle(
+                                    screen,
+                                    (0, 0, 0),
+                                    (players[main_player_num].apple.x, players[main_player_num].apple.y),
+                                    players[main_player_num].apple.radius
+                )
+
+                pygame.draw.circle(
+                                    screen,
+                                    (255, 0, 0),
+                                    (players[main_player_num].apple.x, players[main_player_num].apple.y),
+                                    players[main_player_num].apple.radius-3
+                )
+
 
             for i in obs:
                 i.speed_y = 1
@@ -162,12 +199,24 @@ try:
                     obs.remove(i)
                 
                 for pl in players:
-                    pl.score += size*2 - abs(pl.x-size/2)*2 - abs(pl.y-size/2)
+                    if math.sqrt((pl.x - pl.apple.x)**2 + (pl.y - pl.apple.y)**2) <= pl.radius + pl.apple.radius:
+                        pl.score += pl.apple.price
+                        pl.apple.spawn(100)
+                    #pl.score += (size-100)*math.sqrt(2) - math.sqrt((pl.x - pl.apple.x)**2 + (pl.y - pl.apple.y)**2)
+
                     if pl.check_collision(i) or pl.y >= size or pl.x >= size or pl.x <= 0 or pl.y <= 0:
                         scoreboard[pl.score] = pl.nn.mx.copy()
-                        if pl is players[0]:
-                            alive = False
+                        if alive:
+                            prev_pl_main = players[main_player_num]
+                            if pl is players[main_player_num]:
+                                alive = False
                         players.remove(pl)
+                        if alive:
+                            try:
+                                if not prev_pl_main is players[main_player_num]:
+                                    main_player_num -= 1
+                            except IndexError:
+                                alive = False
                         if len(players) == 0:
                             mx = []
                             for i in range(1, number_of_living + 1):
@@ -175,7 +224,15 @@ try:
                                     mx.append(scoreboard[sorted(scoreboard.keys())[-i]])
                                 except IndexError:
                                     print(i, "horrible")
-                                    rnu = False
+                                    nullify_memory.fun(10, number_of_living)
+                                    with open("memory.txt", "rb") as f:
+                                        mx = pickle.load(f)
+                                    for i in range(len(scoreboard.keys())):
+                                        mx[i] = scoreboard[sorted(scoreboard.keys())[-i]]
+                                    with open("memory.txt", "wb+") as f:
+                                        pickle.dump(mx, f)
+                                    break
+
                             print(len(scoreboard.keys()))
                             running = False
 
@@ -199,7 +256,7 @@ try:
                     if temp:
                         if temp[0] not in outs or temp[1] < outs[temp[0]] or outs[temp[0]] == 0:
                             outs[temp[0]] = int(temp[1])
-                pl.decide(*outs, pl.x - size/2, pl.y - size/2)
+                pl.decide(*outs, pl.x - pl.apple.x, pl.y - pl.apple.y)
             pygame.display.flip()
             pygame.time.wait(delay_time)
         if generation_number%10 == 0:
@@ -208,10 +265,8 @@ try:
                 pickle.dump((delay_time, difficulty, draw_everyone, generation_number, gen_am), f)
             with open("memory.txt", "wb+") as f:
                 pickle.dump(mx, f)
-except Exception as e:
-    print(e, e.args)
-    for i in e.args:
-        print(i)
+except Exception:
+    print(traceback.format_exc())
 except KeyboardInterrupt:
     print("interrupted")
 with open("settings", "wb+") as f:
