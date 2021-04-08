@@ -5,7 +5,8 @@ import random
 import neuro
 import pickle
 import classes
-
+import nullify_memory
+import traceback
 
 
 pygame.font.init()
@@ -20,27 +21,45 @@ size = 800
 screen = pygame.display.set_mode((size, size))
 
 
-
+score_radius = 50
 running = True
 key = None
 obs = []
 gen_am = 100
 pygame.display.flip()
-with open("memory.txt", "rb") as f:
-    mx = pickle.load(f)
-
+try:
+    with open("memory.txt", "rb") as f:
+        mx = pickle.load(f)
+except Exception:
+    nullify_memory.nullif()
+    with open("memory.txt", "rb") as f:
+        mx = pickle.load(f)
 generation_number = 0
 number_of_living = 5
-with open("settings", "rb") as f:
-    delay_time, difficulty, draw_everyone, generation_number, gen_am = pickle.load(f)
-
+try:
+    with open("settings", "rb") as f:
+        delay_time, difficulty, draw_everyone, generation_number, gen_am = pickle.load(f)
+except Exception:
+    nullify_memory.nullif()
+    with open("settings", "rb") as f:
+        delay_time, difficulty, draw_everyone, generation_number, gen_am = pickle.load(f)
 rnu = True
 try:
     while rnu:
         generation_number += 1
         players = []
-        for i in range(number_of_living):
-            players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi= mx[i]))
+        try:
+            for i in range(number_of_living):
+                players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi= mx[i]))
+        except IndexError:
+            nullify_memory.nullif()
+            with open("memory.txt", "rb") as f:
+                mx = pickle.load(f)
+            with open("settings", "rb") as f:
+                delay_time, difficulty, draw_everyone, generation_number, gen_am = pickle.load(f)
+            for i in range(number_of_living):
+                players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi= mx[i]))
+        
         running = True
         scoreboard = {}
         obs = []
@@ -138,17 +157,40 @@ try:
             if alive:
                 pygame.draw.circle(
                                     screen,
-                                    (0, 0, 0),
+                                    (0, 255, 0),
                                     (players[0].x, players[0].y),
                                     players[0].radius
                 )
 
-                pygame.draw.circle(
-                                    screen,
-                                    (0, 255, 0),
-                                    (players[0].x, players[0].y),
-                                    players[0].radius-3
-                )
+                
+            pygame.draw.line(
+                                screen, 
+                                (255, 0, 0),
+                                (size/2 - score_radius, size/2 - score_radius),
+                                (size/2 - score_radius, size/2 + score_radius)
+                            )
+            pygame.draw.line(
+                                screen, 
+                                (255, 0, 0),
+                                (size/2 - score_radius, size/2 + score_radius),
+                                (size/2 + score_radius, size/2 + score_radius)
+                            )
+            pygame.draw.line(
+                                screen, 
+                                (255, 0, 0),
+                                (size/2 + score_radius, size/2 + score_radius),
+                                (size/2 + score_radius, size/2 - score_radius)
+                            )
+            pygame.draw.line(
+                                screen, 
+                                (255, 0, 0),
+                                (size/2 + score_radius, size/2 - score_radius),
+                                (size/2 - score_radius, size/2 - score_radius)
+                            )
+
+
+
+
 
             for i in obs:
                 i.speed_y = 1
@@ -162,7 +204,21 @@ try:
                     obs.remove(i)
                 
                 for pl in players:
-                    pl.score += size*2 - abs(pl.x-size/2)*2 - abs(pl.y-size/2)
+                    if abs(pl.x-size/2) < score_radius and abs(pl.y-size/2) < score_radius:
+                        pl.score += 1
+                        pygame.draw.circle(
+                                            screen,
+                                            (0, 0, 0),
+                                            (pl.x, pl.y),
+                                            pl.radius
+                                        )
+                        pygame.draw.circle(
+                                            screen,
+                                            (100, 100, 255),
+                                            (pl.x, pl.y),
+                                            pl.radius-3
+                                        )
+
                     if pl.check_collision(i) or pl.y >= size or pl.x >= size or pl.x <= 0 or pl.y <= 0:
                         scoreboard[pl.score] = pl.nn.mx.copy()
                         if pl is players[0]:
@@ -175,7 +231,10 @@ try:
                                     mx.append(scoreboard[sorted(scoreboard.keys())[-i]])
                                 except IndexError:
                                     print(i, "horrible")
-                                    rnu = False
+                                    nullify_memory.nullif()
+                                    with open("memory.txt", "rb") as f:
+                                        mx = pickle.load(f)
+                                    break
                             print(len(scoreboard.keys()))
                             running = False
 
@@ -209,9 +268,8 @@ try:
             with open("memory.txt", "wb+") as f:
                 pickle.dump(mx, f)
 except Exception as e:
-    print(e, e.args)
-    for i in e.args:
-        print(i)
+    print(traceback.format_exc())
+    print("saving")
 except KeyboardInterrupt:
     print("interrupted")
 with open("settings", "wb+") as f:
