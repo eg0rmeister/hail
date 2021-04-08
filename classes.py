@@ -28,7 +28,7 @@ class player(thing):
             self.y = 0
     
     def check_collision(self, obj:thing):
-        if math.sqrt((obj.x - self.x)**2 + (obj.y - self.y)**2) <= self.radius + obj.radius:
+        if math.sqrt((obj.x - self.x)**2 + (obj.y - self.y)**2) < self.radius + obj.radius:
             return True
         return False
     
