@@ -13,6 +13,7 @@ class thing():
         self.speed_y = speed_y
         self.size = size
 
+
 class player(thing):
     
     def move(self):
@@ -65,17 +66,25 @@ class obstacle(thing):
             return True
         return False
 
+
+class apple(thing):
+    
+    def __init__(self, x = 0, y = 0, radius = 10, speed = 2, speed_x = 0, speed_y = 0, size = 800, price = 100):
+        thing.__init__(self, x, y, radius, speed, speed_x, speed_y, size)
+        self.price = price
+
+    def spawn(self, restr):
+        self.x = random.randint(restr, self.size - restr)
+        self.y = random.randint(restr, self.size - restr)
+
+
 class smartPlayer(player):
     
     def __init__(self, x = 0, y = 0, radius = 10, speed = 2, speed_x = 0, speed_y = 0, size = 800, mxi = []):
-        self.x = x
-        self.y = y
-        self.radius = radius
-        self.speed_x = speed_x
-        self.speed_y = speed_y
-        self.size = size
+        thing.__init__(self, x, y, radius, speed, speed_x, speed_y, size)
         self.nn = neuro.Neuro(10, 2, mxi)
         self.score = 0
+        self.apple = apple(price = 100000)
 
     def decide(self, *ins):
         a = self.nn.calculate(*ins)
