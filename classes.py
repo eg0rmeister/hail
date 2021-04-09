@@ -69,9 +69,10 @@ class obstacle(thing):
 
 class apple(thing):
     
-    def __init__(self, x = 0, y = 0, radius = 10, speed = 2, speed_x = 0, speed_y = 0, size = 800, price = 100):
+    def __init__(self, x = 0, y = 0, radius = 10, speed = 2, speed_x = 0, speed_y = 0, size = 800, price = 100, time_price = 600):
         thing.__init__(self, x, y, radius, speed, speed_x, speed_y, size)
         self.price = price
+        self.time_price = time_price
 
     def spawn(self, restr):
         self.x = random.randint(restr, self.size - restr)
@@ -80,11 +81,14 @@ class apple(thing):
 
 class smartPlayer(player):
     
-    def __init__(self, x = 0, y = 0, radius = 10, speed = 2, speed_x = 0, speed_y = 0, size = 800, mxi = []):
+    def __init__(self, x = 0, y = 0, radius = 10, speed = 2, speed_x = 0, speed_y = 0, size = 800, mxi = [], time = False):
         thing.__init__(self, x, y, radius, speed, speed_x, speed_y, size)
+        if not time:
+            time = size*2/speed
         self.nn = neuro.Neuro(10, 2, mxi)
+        self.time = time
         self.score = 0
-        self.apple = apple(price = 100000)
+        self.apple = apple(price = 100000, time_price = 600)
 
     def decide(self, *ins):
         a = self.nn.calculate(*ins)

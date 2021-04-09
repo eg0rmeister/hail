@@ -32,6 +32,7 @@ with open("memory.txt", "rb") as f:
 
 generation_number = 0
 number_of_living = 5
+draw_apples = True
 with open("settings", "rb") as f:
     delay_time, difficulty, draw_everyone, generation_number, gen_am = pickle.load(f)
 
@@ -135,6 +136,8 @@ try:
                         difficulty = int(input("enter difficulty(0 = hard, 10 = easy)"))
                     elif event.key == pygame.K_n:
                         gen_am = int(input("amount in generation"))
+                    elif event.key == pygame.K_a:
+                        draw_apples = not draw_apples
 
 
             screen.fill((255, 255, 255))
@@ -152,7 +155,22 @@ try:
                                     (pl.x, pl.y),
                                     pl.radius-3
                                     )
+                    if draw_apples:
+                        pygame.draw.circle(
+                                            screen,
+                                            (0, 0, 0),
+                                            (pl.apple.x, pl.apple.y),
+                                            pl.apple.radius
+                        )
+
+                        pygame.draw.circle(
+                                            screen,
+                                            (255, 0, 0),
+                                            (pl.apple.x, pl.apple.y),
+                                            pl.apple.radius-3
+                        )
                 pl.move()
+                pl.time -= 1
 
             
 
@@ -200,11 +218,12 @@ try:
                 
                 for pl in players:
                     if math.sqrt((pl.x - pl.apple.x)**2 + (pl.y - pl.apple.y)**2) <= pl.radius + pl.apple.radius:
-                        pl.score += pl.apple.price
+                        pl.time += pl.apple.time_price
                         pl.apple.spawn(100)
-                    #pl.score += (size-100)*math.sqrt(2) - math.sqrt((pl.x - pl.apple.x)**2 + (pl.y - pl.apple.y)**2)
-
-                    if pl.check_collision(i) or pl.y >= size or pl.x >= size or pl.x <= 0 or pl.y <= 0:
+                    pl.score += 0.01*((size-100)*math.sqrt(2) - math.sqrt((pl.x - pl.apple.x)**2 + (pl.y - pl.apple.y)**2))
+                    #pl.score += 1
+                    
+                    if pl.check_collision(i) or pl.y + pl.radius >= size or pl.x + pl.radius >= size or pl.x - pl.radius <= 0 or pl.y - pl.radius <= 0 or pl.time < 0:
                         scoreboard[pl.score] = pl.nn.mx.copy()
                         if alive:
                             prev_pl_main = players[main_player_num]
@@ -238,7 +257,6 @@ try:
 
             for pl in players:
                 outs = [0 for _ in range(8)]
-                
                 '''
                 outs[1] = size - pl.x
                 outs[0] = pl.x
@@ -248,7 +266,6 @@ try:
                 outs[5] = min(pl.x, pl.y) * math.sqrt(2)
                 outs[6] = min(pl.x, pl.y) * math.sqrt(2)
                 outs[7] = min(size - pl.x, pl.y) * math.sqrt(2)
-                outs[7] = min(size - pl.y, pl.x) * math.sqrt(2)
                 '''
                 
                 for i in obs:
