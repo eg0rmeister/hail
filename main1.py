@@ -72,7 +72,7 @@ try:
     #        temp1 = players[i].nn.mx[0][0][0]
     #        temp2 = mx[0][0][0]
             players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi=mx1))
-            players[-1].nn.mutate(1, chance=100)
+            players[-1].nn.mutate(5, chance=100)
             players[-1].apple.spawn(100)
     #        print(len(players[-1].nn.mx))
     #        print(players[i].nn.mx == players[i-1].nn.mx)
