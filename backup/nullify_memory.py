@@ -1,6 +1,10 @@
 import pickle
-def fun(size = 10, number_of_living = 10):
-    for i in range
+def fun(size, number_of_living):
+    size = 10
+    a = [[[[0 for i in range(size)] for j in range(size)] for k in range(2)] for _ in range(number_of_living)]
+    for i in range(number_of_living):
+        a[i].append([[0 for i in range(size)] for j in range(2)])
+    print(a[0][1])
     with open("memory.txt", "wb+") as f:
         pickle.dump(a, f)
     with open("settings", "rb") as f:

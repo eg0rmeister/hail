@@ -7,7 +7,6 @@ import pickle
 import classes
 import traceback
 import nullify_memory
-import copy
 
 
 pygame.font.init()
@@ -28,11 +27,8 @@ key = None
 obs = []
 gen_am = 100
 pygame.display.flip()
-try:
-    with open("memory.txt", "rb") as f:
-        best = pickle.load(f)
-except FileNotFoundError:
-    nullify_memory.nullif()
+with open("memory.txt", "rb") as f:
+    mx = pickle.load(f)
 
 generation_number = 0
 number_of_living = 5
@@ -44,15 +40,12 @@ rnu = True
 try:
     while rnu:
         generation_number += 1
-        players = [*best]
+        players = []
         try:
-            for i in range(number_of_living, gen_am):
-                
-                players.append(copy.deepcopy(best[random.randint(0, number_of_living)]))
-                players[-1].nn.mutate()
-                players[-1].nn.mutate()
-                players[-1].apple.spawn(100)
-                
+            for i in range(number_of_living):
+                players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi= mx[i]))
+                players[i].apple.spawn(100)
+                print(i)
         except IndexError:
             nullify_memory.fun(10, number_of_living)
             with open("memory.txt", "rb") as f:
@@ -63,6 +56,26 @@ try:
         obs = []
         for i in range(number_of_living, gen_am):
             rannum = random.randint(0, number_of_living-1)
+            mx1 = []
+            for i1 in range(len(mx[0])):
+                mx1.append([])
+                for i2 in range(len(mx[0][i1])):
+                    mx1[i1].append([])
+                    for i3 in range(len(mx[0][i1][i2])):
+                        mx1[i1]
+                        mx1[i1][i2]
+                        mx[rannum]
+                        mx[rannum][i1]
+                        mx[rannum][i1][i2]
+                        mx[rannum][i1][i2][i3]
+                        mx1[i1][i2].append(mx[rannum][i1][i2][i3])
+    #        temp1 = players[i].nn.mx[0][0][0]
+    #        temp2 = mx[0][0][0]
+            players.append(classes.smartPlayer(x= size/2, y= size/2, size = size, mxi=mx1))
+            players[-1].nn.mutate(5, chance=100)
+            players[-1].apple.spawn(100)
+    #        print(len(players[-1].nn.mx))
+    #        print(players[i].nn.mx == players[i-1].nn.mx)
         print("generation_nummer", generation_number)
         framecount = 0
         alive = True
