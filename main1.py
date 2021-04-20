@@ -32,7 +32,13 @@ try:
     with open("memory.txt", "rb") as f:
         best = pickle.load(f)
 except FileNotFoundError:
-    nullify_memory.nullif()
+    nullify_memory.fun()
+    with open("memory.txt", "rb") as f:
+        best = pickle.load(f)
+except EOFError:
+    nullify_memory.fun()
+    with open("memory.txt", "rb") as f:
+        best = pickle.load(f)
 
 generation_number = 0
 number_of_living = 5
@@ -44,20 +50,23 @@ rnu = True
 try:
     while rnu:
         generation_number += 1
-        players = [*best]
-        try:
-            for i in range(number_of_living, gen_am):
-                
-                players.append(copy.deepcopy(best[random.randint(0, number_of_living)]))
-                players[-1].nn.mutate()
-                players[-1].nn.mutate()
-                players[-1].apple.spawn(100)
-                
-        except IndexError:
-            nullify_memory.fun(10, number_of_living)
-            with open("memory.txt", "rb") as f:
-                mx = pickle.load(f)
-            continue
+        best = [*best]
+        players = []
+        for i in range(number_of_living):
+            players.append(classes.smartPlayer())
+            players[-1].nn = copy.deepcopy(best[i])
+        for i in range(number_of_living, gen_am):    
+            players.append(classes.smartPlayer())
+            players[-1].nn = copy.deepcopy(random.choice(best))
+            players[-1].nn.mutate()
+            players[-1].nn.mutate()
+            players[-1].nn.mutate()
+            players[-1].nn.mutate()
+            players[-1].nn.mutate()
+            players[-1].nn.mutate()
+            players[-1].apple.spawn(100)
+            print(players[-1], type(players[-1]))
+        
         running = True
         scoreboard = {}
         obs = []
@@ -118,7 +127,7 @@ try:
                     elif event.key == pygame.K_d:
                         draw_everyone = not draw_everyone
                     elif event.key == pygame.K_t:
-                        delay_time = float(input("enter delay time"))
+                        delay_time = int(input("enter delay time"))
                     elif event.key == pygame.K_s:
                         difficulty = int(input("enter difficulty(0 = hard, 10 = easy)"))
                     elif event.key == pygame.K_n:
@@ -157,7 +166,6 @@ try:
                                             pl.apple.radius-3
                         )
                 pl.move()
-                pl.time -= 1
 
             
 
@@ -211,7 +219,7 @@ try:
                     #pl.score += 1
                     
                     if pl.check_collision(i) or pl.y + pl.radius >= size or pl.x + pl.radius >= size or pl.x - pl.radius <= 0 or pl.y - pl.radius <= 0 or pl.time < 0:
-                        scoreboard[pl.score] = pl.nn.mx.copy()
+                        scoreboard[pl.score] = copy.deepcopy(pl.nn)
                         if alive:
                             prev_pl_main = players[main_player_num]
                             if pl is players[main_player_num]:
@@ -262,7 +270,7 @@ try:
                             outs[temp[0]] = int(temp[1])
                 pl.decide(*outs, pl.x - pl.apple.x, pl.y - pl.apple.y)
             pygame.display.flip()
-            pygame.time.wait(delay_time)
+            pygame.time.wait(1)
         if generation_number%10 == 0:
             print("remembering")
             with open("settings", "wb+") as f:
@@ -273,7 +281,8 @@ except Exception:
     print(traceback.format_exc())
 except KeyboardInterrupt:
     print("interrupted")
+print("rememberin\'")
 with open("settings", "wb+") as f:
     pickle.dump((delay_time, difficulty, draw_everyone, generation_number, gen_am), f)
 with open("memory.txt", "wb+") as f:
-    pickle.dump(mx, f)
+    pickle.dump(best, f)

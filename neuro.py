@@ -11,13 +11,11 @@ class Neuron:
         self.outs = outs
         self.k = k
         self.x = x
-        print(type(self.outs))
         
     
     def calc(self, x= (0)):
         ret = 0
         temp = []
-        print(type(self.outs), self.outs)
         for i in self.outs:
             ret += i.calc(x)
         return sigmoid(ret)
@@ -41,7 +39,6 @@ class FirstNeuron:
         self.outs = outs
         self.k = 1
         self.x = 0
-        print(type(self.outs))
         
     def calc(self, x= (0)):
         ret = 0
@@ -53,8 +50,12 @@ class FirstNeuron:
         self.outs.add(neuron)
         
     def remNeuron(self, neuron):
-        self.outs.remove(neuron)
-
+        try:
+            self.outs.remove(neuron)
+        except:
+            print(self.outs)
+            print(neuron)
+            print(neuron in self.outs)
 
 
 class Neuro():
@@ -68,14 +69,14 @@ class Neuro():
         self.score = score
         
     def calculate(self, *ins):
-        ret = 0
+        ret = []
         for i in self.firsts:
-            ret += i.calc(ins)
+            ret.append(i.calc(ins))
         return ret
     
     def mutate(self):
-        rannum = random.randint(0, 2)
-        if rannum == 0 and len(self.connections):
+        rannum = random.randint(0, 7)
+        if rannum <= 3 and len(self.connections):
             temp = []
             for i in self.connections:
                 temp.append(i)
@@ -84,7 +85,7 @@ class Neuro():
             b = choice[1]
             a.remNeuron(b)
             self.connections.remove((a, b))
-        elif rannum == 1 and len(self.connections):
+        elif rannum <= 4 and len(self.connections):
             temp = []
             for i in self.connections:
                 temp.append(i)

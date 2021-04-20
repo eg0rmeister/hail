@@ -81,11 +81,11 @@ class apple(thing):
 
 class smartPlayer(player):
     
-    def __init__(self, x = 0, y = 0, radius = 10, speed = 2, speed_x = 0, speed_y = 0, size = 800, mxi = [], time = False):
+    def __init__(self, x = 400, y = 400, radius = 10, speed = 2, speed_x = 0, speed_y = 0, size = 800, time = False):
         thing.__init__(self, x, y, radius, speed, speed_x, speed_y, size)
         if not time:
             time = size*2/speed
-        self.nn = neuro.Neuro(10, 2, mxi)
+        self.nn = neuro.Neuro(10, 2)
         self.time = time
         self.score = 0
         self.apple = apple(price = 100000, time_price = 600)
